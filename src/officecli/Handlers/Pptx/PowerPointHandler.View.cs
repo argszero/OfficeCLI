@@ -773,6 +773,51 @@ public partial class PowerPointHandler
                     });
                 }
 
+                // Adjustment values the preset does not declare (#235). `add` /
+                // `set geometry=` copy an `adj=name:fmla` name straight into the
+                // avLst unless the preset is one CanonicalAdjName knows
+                // (donut/noSmoking) or one MultiGuidePresetDefaults covers, so
+                // `geometry=rect --prop adj=adj:val 14000` writes <a:gd
+                // name="adj"/> into a preset that declares no adjustment value at
+                // all, and `geometry=roundRect --prop adj=adj1:…` writes the wrong
+                // name for the single value roundRect does declare. ECMA-376
+                // leaves an undeclared value unused rather than invalid: the file
+                // still opens and the schema validator (so `validate`) stays
+                // green, while the geometry the author asked for silently never
+                // materialises. Warning, not Error — a lint, not a gate.
+                var prstGeom = shape.ShapeProperties?.GetFirstChild<Drawing.PresetGeometry>();
+                var undeclaredAdj = FindUndeclaredAdjustValues(prstGeom, out var adjPresetToken);
+                if (undeclaredAdj.Count > 0)
+                {
+                    PresetDeclaredAdjustValues.TryGetValue(adjPresetToken, out var declaredAdj);
+                    var declaredHint = declaredAdj is { Length: > 0 }
+                        ? $"preset declares {string.Join(", ", declaredAdj)}"
+                        : "preset declares none";
+                    // Context carries only the offending <a:gd> elements, not the
+                    // whole avLst, so the report points at the defect.
+                    var gdXml = string.Join("",
+                        (prstGeom?.GetFirstChild<Drawing.AdjustValueList>()?.Elements<Drawing.ShapeGuide>()
+                            ?? Enumerable.Empty<Drawing.ShapeGuide>())
+                        .Where(g => undeclaredAdj.Contains(g.Name?.Value ?? ""))
+                        .Select(g => $"<a:gd name=\"{g.Name?.Value}\" fmla=\"{g.Formula?.Value}\"/>"));
+                    issues.Add(new DocumentIssue
+                    {
+                        Id = $"A{++issueNum}",
+                        Type = IssueType.Format,
+                        Subtype = Core.IssueSubtypes.UndeclaredAdjustValue,
+                        Severity = IssueSeverity.Warning,
+                        Path = shapePath,
+                        Message = $"Adjustment value{(undeclaredAdj.Count > 1 ? "s" : "")} "
+                                + string.Join(", ", undeclaredAdj.Select(n => $"\"{n}\""))
+                                + $" {(undeclaredAdj.Count > 1 ? "are" : "is")} not declared by preset "
+                                + $"\"{adjPresetToken}\" ({declaredHint})"
+                                + " — PowerPoint ignores an undeclared adjustment value, so the"
+                                + " geometry the author asked for never takes effect.",
+                        Context = $"<a:prstGeom prst=\"{adjPresetToken}\"><a:avLst>{gdXml}</a:avLst>",
+                        Suggestion = "Drop the undeclared value from the avLst, or use a preset that declares it."
+                    });
+                }
+
                 // Off-slide: a shape whose declared box extends substantially
                 // past a slide edge. Box geometry only (x/y/w/h) — a shape placed
                 // off the canvas is a layout defect regardless of how text wraps.

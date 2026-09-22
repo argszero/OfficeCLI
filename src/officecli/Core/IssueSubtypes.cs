@@ -62,6 +62,17 @@ public static class IssueSubtypes
     /// skipped (a texture pulled over a background is intentional).</summary>
     public const string PictureAspectDistorted = "picture_aspect_distorted";
 
+    /// <summary>pptx-only: a preset geometry's <c>&lt;a:avLst&gt;</c> names an
+    /// adjustment value the preset's own ECMA-376 definition does not declare —
+    /// an <c>&lt;a:gd&gt;</c> the preset has no value for. PowerPoint accepts and
+    /// then ignores it, so the shape renders with the preset default instead of
+    /// the authored value, while the schema (and therefore <c>validate</c>) stays
+    /// green. Reachable from the CLI itself:
+    /// <c>add … --type shape --prop geometry=rect --prop adj=adj:val 14000</c>
+    /// writes an undeclared <c>adj</c> into <c>rect</c>, which declares no
+    /// adjustment value. Format bucket, Warning.</summary>
+    public const string UndeclaredAdjustValue = "undeclared_adjust_value";
+
     /// <summary>Broad IssueType bucket names — the canonical surface shown
     /// in error messages and help. Single-letter aliases (<see cref="BucketAliases"/>)
     /// are accepted by Validate but kept out of the user-facing list so the
@@ -85,6 +96,7 @@ public static class IssueSubtypes
         FormulaNotEvaluated, FormulaCacheStale, FormulaRefMissingSheet, FormulaEvalError,
         FieldNotEvaluated, FieldCacheStale,
         SlideFieldNotEvaluated, NotesUnresolvedRid, LowContrast, PictureAspectDistorted,
+        UndeclaredAdjustValue,
         ChartSeriesRefMissingSheet, ChartCacheStale,
         DefinedNameBroken, DefinedNameTargetMissing,
         BrokenPartRef, NumericOverflow, GeneralPrecisionLoss,
@@ -108,7 +120,8 @@ public static class IssueSubtypes
             + "Opt-in only (request by exact name; not included in --type content): "
             + string.Join(", ", OptInSubtypes) + ". "
             + "Subtypes are format-specific — formula_* / chart_* / definedname_* / numeric_overflow apply to xlsx, "
-            + "field_* to docx, slide_field_* / notes_unresolved_rid / broken_part_ref / low_contrast / picture_aspect_distorted to pptx; requesting a subtype that does not apply to "
+            + "field_* to docx, slide_field_* / notes_unresolved_rid / broken_part_ref / low_contrast / "
+            + "picture_aspect_distorted / undeclared_adjust_value to pptx; requesting a subtype that does not apply to "
             + "the queried file returns count=0 (not an error). "
             + "All values are case-insensitive and surrounding whitespace is trimmed.";
     }

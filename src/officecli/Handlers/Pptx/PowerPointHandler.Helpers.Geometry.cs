@@ -417,6 +417,249 @@ public partial class PowerPointHandler
         };
 
     /// <summary>
+    /// The adjustment values each ECMA-376 preset shape definition declares,
+    /// keyed by the <c>prstGeom@prst</c> token. A preset's own
+    /// <c>&lt;avLst&gt;</c> in presetShapeDefinitions.xml <em>is</em> its list of
+    /// adjustment values (<c>adj</c>, <c>adj1</c>…<c>adj8</c>, plus the star /
+    /// hexagon <c>hf</c>/<c>vf</c>); the computed guides in its
+    /// <c>&lt;gdLst&gt;</c> are not authorable through <c>prstGeom</c> and are
+    /// deliberately excluded. The 64 definitions that declare none at all
+    /// (<c>rect</c>, <c>ellipse</c>, <c>cloud</c>, …) are listed with an empty
+    /// array rather than omitted, so "declares none" stays distinguishable from
+    /// "preset unknown to this table".
+    ///
+    /// Generated from the spec's own table rather than recalled. LibreOffice
+    /// vendors the ECMA-376 definitions verbatim at
+    /// <c>oox/source/drawingml/customshapes/presetShapeDefinitions.xml</c>
+    /// (538972 bytes, sha256
+    /// <c>eaff19f4405b3be6822428c96ef46cc685499217366fd58e5e63a5a24739f02f</c>);
+    /// every row below is the <c>&lt;gd name&gt;</c> list of that preset's own
+    /// <c>&lt;avLst&gt;</c>. This is the same knowledge
+    /// <see cref="CanonicalAdjName"/> hand-codes for donut/noSmoking and
+    /// <see cref="MultiGuidePresetDefaults"/> hand-codes for five shapes,
+    /// completed for all 187.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string[]> PresetDeclaredAdjustValues =
+        new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["accentBorderCallout1"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["accentBorderCallout2"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6" },
+            ["accentBorderCallout3"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6", "adj7", "adj8" },
+            ["accentCallout1"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["accentCallout2"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6" },
+            ["accentCallout3"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6", "adj7", "adj8" },
+            ["actionButtonBackPrevious"] = Array.Empty<string>(),
+            ["actionButtonBeginning"] = Array.Empty<string>(),
+            ["actionButtonBlank"] = Array.Empty<string>(),
+            ["actionButtonDocument"] = Array.Empty<string>(),
+            ["actionButtonEnd"] = Array.Empty<string>(),
+            ["actionButtonForwardNext"] = Array.Empty<string>(),
+            ["actionButtonHelp"] = Array.Empty<string>(),
+            ["actionButtonHome"] = Array.Empty<string>(),
+            ["actionButtonInformation"] = Array.Empty<string>(),
+            ["actionButtonMovie"] = Array.Empty<string>(),
+            ["actionButtonReturn"] = Array.Empty<string>(),
+            ["actionButtonSound"] = Array.Empty<string>(),
+            ["arc"] = new[] { "adj1", "adj2" },
+            ["bentArrow"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["bentConnector2"] = Array.Empty<string>(),
+            ["bentConnector3"] = new[] { "adj1" },
+            ["bentConnector4"] = new[] { "adj1", "adj2" },
+            ["bentConnector5"] = new[] { "adj1", "adj2", "adj3" },
+            ["bentUpArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["bevel"] = new[] { "adj" },
+            ["blockArc"] = new[] { "adj1", "adj2", "adj3" },
+            ["borderCallout1"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["borderCallout2"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6" },
+            ["borderCallout3"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6", "adj7", "adj8" },
+            ["bracePair"] = new[] { "adj" },
+            ["bracketPair"] = new[] { "adj" },
+            ["callout1"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["callout2"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6" },
+            ["callout3"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5", "adj6", "adj7", "adj8" },
+            ["can"] = new[] { "adj" },
+            ["chartPlus"] = Array.Empty<string>(),
+            ["chartStar"] = Array.Empty<string>(),
+            ["chartX"] = Array.Empty<string>(),
+            ["chevron"] = new[] { "adj" },
+            ["chord"] = new[] { "adj1", "adj2" },
+            ["circularArrow"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5" },
+            ["cloud"] = Array.Empty<string>(),
+            ["cloudCallout"] = new[] { "adj1", "adj2" },
+            ["corner"] = new[] { "adj1", "adj2" },
+            ["cornerTabs"] = Array.Empty<string>(),
+            ["cube"] = new[] { "adj" },
+            ["curvedConnector2"] = Array.Empty<string>(),
+            ["curvedConnector3"] = new[] { "adj1" },
+            ["curvedConnector4"] = new[] { "adj1", "adj2" },
+            ["curvedConnector5"] = new[] { "adj1", "adj2", "adj3" },
+            ["curvedDownArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["curvedLeftArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["curvedRightArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["curvedUpArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["decagon"] = new[] { "vf" },
+            ["diagStripe"] = new[] { "adj" },
+            ["diamond"] = Array.Empty<string>(),
+            ["dodecagon"] = Array.Empty<string>(),
+            ["donut"] = new[] { "adj" },
+            ["doubleWave"] = new[] { "adj1", "adj2" },
+            ["downArrow"] = new[] { "adj1", "adj2" },
+            ["downArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["ellipse"] = Array.Empty<string>(),
+            ["ellipseRibbon"] = new[] { "adj1", "adj2", "adj3" },
+            ["ellipseRibbon2"] = new[] { "adj1", "adj2", "adj3" },
+            ["flowChartAlternateProcess"] = Array.Empty<string>(),
+            ["flowChartCollate"] = Array.Empty<string>(),
+            ["flowChartConnector"] = Array.Empty<string>(),
+            ["flowChartDecision"] = Array.Empty<string>(),
+            ["flowChartDelay"] = Array.Empty<string>(),
+            ["flowChartDisplay"] = Array.Empty<string>(),
+            ["flowChartDocument"] = Array.Empty<string>(),
+            ["flowChartExtract"] = Array.Empty<string>(),
+            ["flowChartInputOutput"] = Array.Empty<string>(),
+            ["flowChartInternalStorage"] = Array.Empty<string>(),
+            ["flowChartMagneticDisk"] = Array.Empty<string>(),
+            ["flowChartMagneticDrum"] = Array.Empty<string>(),
+            ["flowChartMagneticTape"] = Array.Empty<string>(),
+            ["flowChartManualInput"] = Array.Empty<string>(),
+            ["flowChartManualOperation"] = Array.Empty<string>(),
+            ["flowChartMerge"] = Array.Empty<string>(),
+            ["flowChartMultidocument"] = Array.Empty<string>(),
+            ["flowChartOfflineStorage"] = Array.Empty<string>(),
+            ["flowChartOffpageConnector"] = Array.Empty<string>(),
+            ["flowChartOnlineStorage"] = Array.Empty<string>(),
+            ["flowChartOr"] = Array.Empty<string>(),
+            ["flowChartPredefinedProcess"] = Array.Empty<string>(),
+            ["flowChartPreparation"] = Array.Empty<string>(),
+            ["flowChartProcess"] = Array.Empty<string>(),
+            ["flowChartPunchedCard"] = Array.Empty<string>(),
+            ["flowChartPunchedTape"] = Array.Empty<string>(),
+            ["flowChartSort"] = Array.Empty<string>(),
+            ["flowChartSummingJunction"] = Array.Empty<string>(),
+            ["flowChartTerminator"] = Array.Empty<string>(),
+            ["foldedCorner"] = new[] { "adj" },
+            ["frame"] = new[] { "adj1" },
+            ["funnel"] = Array.Empty<string>(),
+            ["gear6"] = new[] { "adj1", "adj2" },
+            ["gear9"] = new[] { "adj1", "adj2" },
+            ["halfFrame"] = new[] { "adj1", "adj2" },
+            ["heart"] = Array.Empty<string>(),
+            ["heptagon"] = new[] { "hf", "vf" },
+            ["hexagon"] = new[] { "adj", "vf" },
+            ["homePlate"] = new[] { "adj" },
+            ["horizontalScroll"] = new[] { "adj" },
+            ["irregularSeal1"] = Array.Empty<string>(),
+            ["irregularSeal2"] = Array.Empty<string>(),
+            ["leftArrow"] = new[] { "adj1", "adj2" },
+            ["leftArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["leftBrace"] = new[] { "adj1", "adj2" },
+            ["leftBracket"] = new[] { "adj" },
+            ["leftCircularArrow"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5" },
+            ["leftRightArrow"] = new[] { "adj1", "adj2" },
+            ["leftRightArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["leftRightCircularArrow"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5" },
+            ["leftRightRibbon"] = new[] { "adj1", "adj2", "adj3" },
+            ["leftRightUpArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["leftUpArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["lightningBolt"] = Array.Empty<string>(),
+            ["line"] = Array.Empty<string>(),
+            ["lineInv"] = Array.Empty<string>(),
+            ["mathDivide"] = new[] { "adj1", "adj2", "adj3" },
+            ["mathEqual"] = new[] { "adj1", "adj2" },
+            ["mathMinus"] = new[] { "adj1" },
+            ["mathMultiply"] = new[] { "adj1" },
+            ["mathNotEqual"] = new[] { "adj1", "adj2", "adj3" },
+            ["mathPlus"] = new[] { "adj1" },
+            ["moon"] = new[] { "adj" },
+            ["noSmoking"] = new[] { "adj" },
+            ["nonIsoscelesTrapezoid"] = new[] { "adj1", "adj2" },
+            ["notchedRightArrow"] = new[] { "adj1", "adj2" },
+            ["octagon"] = new[] { "adj" },
+            ["parallelogram"] = new[] { "adj" },
+            ["pentagon"] = new[] { "hf", "vf" },
+            ["pie"] = new[] { "adj1", "adj2" },
+            ["pieWedge"] = Array.Empty<string>(),
+            ["plaque"] = new[] { "adj" },
+            ["plaqueTabs"] = Array.Empty<string>(),
+            ["plus"] = new[] { "adj" },
+            ["quadArrow"] = new[] { "adj1", "adj2", "adj3" },
+            ["quadArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["rect"] = Array.Empty<string>(),
+            ["ribbon"] = new[] { "adj1", "adj2" },
+            ["ribbon2"] = new[] { "adj1", "adj2" },
+            ["rightArrow"] = new[] { "adj1", "adj2" },
+            ["rightArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["rightBrace"] = new[] { "adj1", "adj2" },
+            ["rightBracket"] = new[] { "adj" },
+            ["round1Rect"] = new[] { "adj" },
+            ["round2DiagRect"] = new[] { "adj1", "adj2" },
+            ["round2SameRect"] = new[] { "adj1", "adj2" },
+            ["roundRect"] = new[] { "adj" },
+            ["rtTriangle"] = Array.Empty<string>(),
+            ["smileyFace"] = new[] { "adj" },
+            ["snip1Rect"] = new[] { "adj" },
+            ["snip2DiagRect"] = new[] { "adj1", "adj2" },
+            ["snip2SameRect"] = new[] { "adj1", "adj2" },
+            ["snipRoundRect"] = new[] { "adj1", "adj2" },
+            ["squareTabs"] = Array.Empty<string>(),
+            ["star10"] = new[] { "adj", "hf" },
+            ["star12"] = new[] { "adj" },
+            ["star16"] = new[] { "adj" },
+            ["star24"] = new[] { "adj" },
+            ["star32"] = new[] { "adj" },
+            ["star4"] = new[] { "adj" },
+            ["star5"] = new[] { "adj", "hf", "vf" },
+            ["star6"] = new[] { "adj", "hf" },
+            ["star7"] = new[] { "adj", "hf", "vf" },
+            ["star8"] = new[] { "adj" },
+            ["straightConnector1"] = Array.Empty<string>(),
+            ["stripedRightArrow"] = new[] { "adj1", "adj2" },
+            ["sun"] = new[] { "adj" },
+            ["swooshArrow"] = new[] { "adj1", "adj2" },
+            ["teardrop"] = new[] { "adj" },
+            ["trapezoid"] = new[] { "adj" },
+            ["triangle"] = new[] { "adj" },
+            ["upArrow"] = new[] { "adj1", "adj2" },
+            ["upArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["upDownArrow"] = new[] { "adj1", "adj2" },
+            ["upDownArrowCallout"] = new[] { "adj1", "adj2", "adj3", "adj4" },
+            ["uturnArrow"] = new[] { "adj1", "adj2", "adj3", "adj4", "adj5" },
+            ["verticalScroll"] = new[] { "adj" },
+            ["wave"] = new[] { "adj1", "adj2" },
+            ["wedgeEllipseCallout"] = new[] { "adj1", "adj2" },
+            ["wedgeRectCallout"] = new[] { "adj1", "adj2" },
+            ["wedgeRoundRectCallout"] = new[] { "adj1", "adj2", "adj3" },
+        };
+
+    /// <summary>
+    /// Names in <paramref name="prstGeom"/>'s avLst that the preset does not
+    /// declare, in document order and without duplicates — the adjustment values
+    /// real PowerPoint accepts but ignores, because the preset's definition has
+    /// no such value for them to set. Empty when every name is declared, when
+    /// there is no avLst, or when the preset is absent from
+    /// <see cref="PresetDeclaredAdjustValues"/>: an unknown preset cannot be
+    /// judged from this table, and a lint must not guess. Comparison is ordinal —
+    /// the definitions are case-sensitive.
+    /// </summary>
+    internal static List<string> FindUndeclaredAdjustValues(
+        Drawing.PresetGeometry? prstGeom, out string presetToken)
+    {
+        presetToken = prstGeom?.Preset?.InnerText ?? "";
+        var undeclared = new List<string>();
+        if (prstGeom == null || presetToken.Length == 0) return undeclared;
+        if (!PresetDeclaredAdjustValues.TryGetValue(presetToken, out var declared)) return undeclared;
+        var avLst = prstGeom.GetFirstChild<Drawing.AdjustValueList>();
+        if (avLst == null) return undeclared;
+        foreach (var gd in avLst.Elements<Drawing.ShapeGuide>())
+        {
+            var name = gd.Name?.Value;
+            if (string.IsNullOrEmpty(name) || undeclared.Contains(name)) continue;
+            if (!declared.Contains(name)) undeclared.Add(name);
+        }
+        return undeclared;
+    }
+
+    /// <summary>
     /// Map the adjust-handle name at <paramref name="index"/> to the name the
     /// given <paramref name="preset"/> actually declares. Presets that define a
     /// single adjust handle name it <c>adj</c> (donut, noSmoking, …); writing the
