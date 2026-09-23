@@ -214,6 +214,19 @@ public partial class WordHandler
         }
         properties.Remove("done");
         properties.Remove("resolved");
+        // CONSISTENCY(comments-ext-parity): the two branches above only upsert a
+        // w15:commentEx when the caller passed parentId or done/resolved, so a
+        // plain `add comment` on a document that already had one (comments.xml=2,
+        // commentsExtended.xml=1) left the new comment with no commentEx at all —
+        // the parts disagree and Word repairs the file on open. Word writes a
+        // commentEx for every comment (per the note on the parentId branch above),
+        // so finish the job here for every add. UpsertCommentEx is find-or-create
+        // and its nulls mean "leave unchanged", so the parent/done the branches
+        // above just applied survive untouched, and a comment with neither prop
+        // gets the same entry (Done=false) the `done=false` spelling already
+        // produced by hand.
+        if (string.IsNullOrEmpty(commentBody.ParagraphId?.Value)) AssignParaId(commentBody);
+        UpsertCommentEx(commentBody.ParagraphId!.Value!, null, null);
 
         var _commentUnsupported = new List<string>();
         ApplyCommentFormatKeys(commentEl, properties, _commentUnsupported);
