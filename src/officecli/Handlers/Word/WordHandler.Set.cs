@@ -589,6 +589,25 @@ public partial class WordHandler
         {
             // Rollback: restore element to pre-modification state
             element.Parent?.ReplaceChild(elementBackup, element);
+            // CONSISTENCY(rollback-detaches): the backup is a CLONE, so the tree
+            // now holds a different instance at this position and `element` is
+            // detached — but the nav caches index by INSTANCE (the run/row/cell
+            // lists memoized per container, the body child-index), so any entry
+            // built before this Set still hands back the detached original.
+            // A successful Set guards against exactly this via the exit-timed
+            // NavCacheClearGuard, armed unless every key is provably
+            // attribute-only (NavCacheSafeSetKeys) — a provably attribute-only
+            // key list is not a promise that nothing else detaches an element,
+            // and the failure path is the one site that does. Servicing a
+            // detached element is the silent wrong-content bug the safe-list
+            // comment warns about: here it manifests as the rejected key and its
+            // effective.* block missing from the report, and as a later
+            // successful Set on the same path mutating the detached copy while
+            // reporting success. InvalidateBodyParaCache() covers the body-direct
+            // caches and reaches ClearNavChildCaches() through ClearBodyChildIndex,
+            // so one call re-arms every cache a rollback here can poison. On the
+            // failure path only, so the O(R) rebuild cannot be hit by a batch.
+            InvalidateBodyParaCache();
             throw;
         }
     }
