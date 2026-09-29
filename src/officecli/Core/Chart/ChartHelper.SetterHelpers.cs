@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
 using Drawing = DocumentFormat.OpenXml.Drawing;
 using C = DocumentFormat.OpenXml.Drawing.Charts;
 
@@ -683,7 +684,14 @@ internal static partial class ChartHelper
     /// Returns true if the property was recognized and handled; false otherwise so the
     /// caller can surface it as "unsupported" rather than silently accepting it.
     /// </summary>
-    internal static bool HandleSeriesDottedProperty(OpenXmlCompositeElement ser, string prop, string value)
+    /// <param name="chartPart">
+    /// Owning chart part, when the caller has one. Only <c>values</c> uses it:
+    /// a literal rewrite is mirrored into the chart's embedded data workbook so
+    /// the cache and the workbook PowerPoint's "Edit Data" opens stay
+    /// consistent (see <see cref="ChartEmbeddedWorkbook"/>).
+    /// </param>
+    internal static bool HandleSeriesDottedProperty(
+        OpenXmlCompositeElement ser, string prop, string value, ChartPart? chartPart = null)
     {
         switch (prop)
         {
@@ -890,6 +898,18 @@ internal static partial class ChartHelper
                             nums[ti] = d;
                         }
                         builtVals = BuildValues(nums);
+                        // A series that still points at the chart's embedded
+                        // workbook (c:f names a cell range) keeps that
+                        // reference: the workbook is the doc PowerPoint
+                        // regenerates the chart from on "Edit Data", so the new
+                        // numbers have to land there too. Rewriting only the
+                        // cache would leave the slide showing numbers the
+                        // workbook contradicts, and the next edit in PowerPoint
+                        // would revert the set. Falls through to the literal
+                        // rewrite when the series qualifies for neither.
+                        if (chartPart != null
+                            && ChartEmbeddedWorkbook.TryWriteSeriesValues(chartPart, valEl, nums))
+                            return true;
                     }
                     // Validation passed — now safe to swap the content in.
                     valEl.RemoveAllChildren();

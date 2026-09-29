@@ -3372,7 +3372,7 @@ internal static partial class ChartHelper
                             .Where(e => e.LocalName == "ser").ToList();
                         if (sIdx < 1 || sIdx > allSer.Count) { unsupported.Add(key); break; }
                         var ser = allSer[sIdx - 1];
-                        if (!HandleSeriesDottedProperty(ser, sProp, value))
+                        if (!HandleSeriesDottedProperty(ser, sProp, value, chartPart))
                             unsupported.Add(key);
                         break;
                     }
