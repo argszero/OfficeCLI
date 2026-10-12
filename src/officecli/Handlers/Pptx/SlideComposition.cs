@@ -299,9 +299,10 @@ internal static class SlideComposition
 
     /// <summary>
     /// R12-5: find the layout (then master) placeholder shape that the given
-    /// slide placeholder inherits from. Same ph type/idx matching as
-    /// ResolveInheritedPosition, but returns the whole shape so callers can
-    /// read inherited spPr fill/etc. Returns null for non-placeholders.
+    /// slide placeholder inherits from. Same two edges as
+    /// ResolveInheritedPosition — slide→layout by idx, layout→master by type —
+    /// but returns the whole shape so callers can read inherited spPr fill/etc.
+    /// Returns null for non-placeholders.
     /// </summary>
     public static Shape? ResolveInheritedPlaceholderShape(Shape shape, OpenXmlPart part)
     {
@@ -315,7 +316,7 @@ internal static class SlideComposition
         var layoutShapeTree = slidePart.SlideLayoutPart?.SlideLayout?.CommonSlideData?.ShapeTree;
         var masterShapeTree = slidePart.SlideLayoutPart?.SlideMasterPart?.SlideMaster?.CommonSlideData?.ShapeTree;
 
-        foreach (var tree in new[] { layoutShapeTree, masterShapeTree })
+        foreach (var (tree, toMaster) in new[] { (layoutShapeTree, false), (masterShapeTree, true) })
         {
             if (tree == null) continue;
             foreach (var candidate in tree.Elements<Shape>())
@@ -323,7 +324,8 @@ internal static class SlideComposition
                 var candidatePh = candidate.NonVisualShapeProperties?.ApplicationNonVisualDrawingProperties
                     ?.GetFirstChild<PlaceholderShape>();
                 if (candidatePh == null) continue;
-                if (PlaceholderMatches(ph, candidatePh)) return candidate;
+                if (toMaster ? MatchesMasterSlot(ph, candidatePh) : PlaceholderMatches(ph, candidatePh))
+                    return candidate;
             }
         }
 
